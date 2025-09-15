@@ -9,7 +9,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "inventories")
-public class InventoryEntity {
+public class InventoryEntity extends BaseEntity {
 
   @Id
   @SequenceGenerator(name = "inventory_seq_generator", sequenceName = "inventories_seq", allocationSize = 1)

@@ -15,7 +15,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "product")
-public class ProductEntity {
+public class ProductEntity extends BaseEntity {
 
   @Id
   @SequenceGenerator(name = "product_seq_generator", sequenceName = "product_seq", allocationSize = 1)
