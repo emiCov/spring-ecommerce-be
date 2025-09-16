@@ -1,16 +1,56 @@
 package org.emi.spring_ecommerce_be.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
+import java.util.List;
+import org.emi.spring_ecommerce_be.dtos.InventoryRequestDto;
+import org.emi.spring_ecommerce_be.dtos.InventoryResponseDto;
 import org.emi.spring_ecommerce_be.services.InventoryService;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("api/inventory")
+@RequestMapping("api/v1/inventory")
 public class InventoryController {
 
   private final InventoryService inventoryService;
 
   public InventoryController(InventoryService inventoryService) {
     this.inventoryService = inventoryService;
+  }
+
+  @PostMapping
+  @Operation(description = "Add inventory")
+  @ResponseStatus(HttpStatus.CREATED)
+  public InventoryResponseDto addInventory(@Valid @RequestBody InventoryRequestDto request) {
+    return inventoryService.addInventory(request);
+  }
+
+  @PutMapping
+  @Operation(description = "Update inventory")
+  @ResponseStatus(HttpStatus.OK)
+  public InventoryResponseDto updateInventory(@Valid @RequestBody InventoryRequestDto request) {
+    return inventoryService.updateInventory(request);
+  }
+
+  @DeleteMapping("/{inventoryCode}")
+  @Operation(description = "Delete inventory")
+  @ResponseStatus(HttpStatus.OK)
+  public void deleteInventory(@PathVariable String inventoryCode) {
+    inventoryService.deleteInventoryByCode(inventoryCode);
+  }
+
+  @GetMapping
+  @Operation(description = "Get all inventories")
+  @ResponseStatus(HttpStatus.OK)
+  public List<InventoryResponseDto> getInventories() {
+    return inventoryService.getInventories();
+  }
+
+  @GetMapping("/{code}")
+  @Operation(description = "Get inventory by code")
+  @ResponseStatus(HttpStatus.OK)
+  public InventoryResponseDto getInventoryByCode(@PathVariable String code) {
+    return inventoryService.getInventoryByCode(code);
   }
 }

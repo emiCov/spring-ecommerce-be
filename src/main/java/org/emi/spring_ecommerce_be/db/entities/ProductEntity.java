@@ -32,7 +32,7 @@ public class ProductEntity extends BaseEntity {
 
   @OneToMany(
       mappedBy = "product",
-      cascade = CascadeType.PERSIST,
+      cascade = CascadeType.ALL,
       orphanRemoval = true)
   private List<TechnicalDetailsEntity> technicalDetails = new ArrayList<>();
 
