@@ -21,6 +21,8 @@ public class InventoryService {
 
   private static final Logger log = LoggerFactory.getLogger(InventoryService.class);
 
+  private static final String INVENTORY_NOT_FOUND_MSG = "Inventory with code: %s was not found";
+
   private final InventoryRepository inventoryRepository;
   private final InventoryMapper inventoryMapper;
   private final ProductRepository productRepository;
@@ -64,6 +66,22 @@ public class InventoryService {
     return inventoryMapper.toInventoryResponse(findInventoryByCode(code));
   }
 
+  @Transactional(readOnly = false)
+  public void removeQuantityForProduct(String productCode, long quantity) {
+    InventoryEntity productInventory = findInventoryByCode(productCode);
+    if (productInventory.getQuantity() < quantity) {
+      throw new IllegalArgumentException("There aren't enough products for: " + productCode);
+    }
+
+    updateQuantityForProduct(productInventory, -quantity);
+  }
+
+  @Transactional
+  public void addQuantityForProduct(String productCode, long quantity) {
+    InventoryEntity productInventory = findInventoryByCode(productCode);
+    updateQuantityForProduct(productInventory, quantity);
+  }
+
   private void validateRequest(InventoryRequestDto inventoryRequestDto) {
     String code = inventoryRequestDto.code();
     if (inventoryRepository.existsByCode(code)) {
@@ -87,9 +105,16 @@ public class InventoryService {
         .findByCode(code)
         .orElseThrow(
             () -> {
-              log.error("Inventory with code: {} not found", code);
-              return new InventoryNotFoundException(
-                  String.format("Inventory with code: %s not found", code));
+              String message = String.format(INVENTORY_NOT_FOUND_MSG, code);
+              log.error(message);
+              return new InventoryNotFoundException(message);
             });
+  }
+
+  private void updateQuantityForProduct(InventoryEntity inventory, long quantity) {
+    long updatedQuantity = inventory.getQuantity() + quantity;
+    inventory.setQuantity(updatedQuantity);
+
+    inventoryRepository.save(inventory);
   }
 }
