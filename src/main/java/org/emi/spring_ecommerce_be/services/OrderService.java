@@ -4,10 +4,8 @@ import java.math.BigDecimal;
 import java.util.List;
 import org.emi.spring_ecommerce_be.db.entities.*;
 import org.emi.spring_ecommerce_be.db.repositories.OrderRepository;
-import org.emi.spring_ecommerce_be.db.repositories.UserRepository;
 import org.emi.spring_ecommerce_be.dtos.OrderResponseDto;
 import org.emi.spring_ecommerce_be.exceptions.OrderNotFoundException;
-import org.emi.spring_ecommerce_be.exceptions.UserNotFoundException;
 import org.emi.spring_ecommerce_be.mappers.OrderMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,33 +18,32 @@ public class OrderService {
 
   private static final Logger log = LoggerFactory.getLogger(OrderService.class);
 
-  private static final String USER_NOT_FOUND_MSG = "User with email: %s was not found";
   private static final String ORDER_NOT_FOUND_MSG = "Order with id: %s was not found";
 
   private final OrderRepository orderRepository;
-  private final UserRepository userRepository;
   private final CartItemService cartItemService;
   private final InventoryService inventoryService;
   private final OrderMapper orderMapper;
+  private final AuthenticationService authenticationService;
 
   public OrderService(
       OrderRepository orderRepository,
-      UserRepository userRepository,
       CartItemService cartItemService,
       InventoryService inventoryService,
-      OrderMapper orderMapper) {
+      OrderMapper orderMapper,
+      AuthenticationService authenticationService) {
     this.orderRepository = orderRepository;
-    this.userRepository = userRepository;
     this.cartItemService = cartItemService;
     this.inventoryService = inventoryService;
     this.orderMapper = orderMapper;
+    this.authenticationService = authenticationService;
   }
 
   @Transactional(readOnly = false)
-  public OrderEntity createPendingOrder(String userEmail) {
-    UserEntity user = findUserByEmail(userEmail);
+  public OrderEntity createPendingOrder() {
+    UserEntity user = authenticationService.getAuthenticatedUser();
 
-    List<CartItemEntity> cartItems = cartItemService.getCartEntityForUser(userEmail);
+    List<CartItemEntity> cartItems = cartItemService.getCartEntityForUser(user.getEmail());
     if (cartItems.isEmpty()) {
       throw new IllegalArgumentException("The cart is empty. Can not create any order");
     }
@@ -60,8 +57,9 @@ public class OrderService {
     return orderRepository.save(order);
   }
 
-  public List<OrderResponseDto> findOrdersByUserEmail(String userEmail) {
-    return orderRepository.findByUser_Email(userEmail).stream()
+  public List<OrderResponseDto> findOrdersByUserEmail() {
+    UserEntity user = authenticationService.getAuthenticatedUser();
+    return orderRepository.findByUser_Email(user.getEmail()).stream()
         .map(orderMapper::toOrderResponseDto)
         .toList();
   }
@@ -76,31 +74,19 @@ public class OrderService {
     order.setOrderStatus(OrderStatus.COMPLETED);
     orderRepository.save(order);
 
-    cartItemService.deleteCartForUser(order.getUser().getEmail());
+    cartItemService.deleteCartForUser();
   }
 
   private void adjustInventory(List<OrderDetailsEntity> orderDetails) {
     orderDetails.forEach(
-        orderDetail -> {
-          inventoryService.removeQuantityForProduct(
-              orderDetail.getProduct().getCode(), orderDetail.getQuantity());
-        });
+        orderDetail ->
+            inventoryService.removeQuantityForProduct(
+                orderDetail.getProduct().getCode(), orderDetail.getQuantity()));
   }
 
   public void cancelOrder(OrderEntity order) {
     order.setOrderStatus(OrderStatus.CANCELLED);
     orderRepository.save(order);
-  }
-
-  private UserEntity findUserByEmail(String email) {
-    return userRepository
-        .findByEmail(email)
-        .orElseThrow(
-            () -> {
-              String message = String.format(USER_NOT_FOUND_MSG, email);
-              log.error(message);
-              return new UserNotFoundException(message);
-            });
   }
 
   private OrderEntity findOrderById(long orderId) {

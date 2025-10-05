@@ -7,6 +7,7 @@ import org.emi.spring_ecommerce_be.dtos.InventoryRequestDto;
 import org.emi.spring_ecommerce_be.dtos.InventoryResponseDto;
 import org.emi.spring_ecommerce_be.services.InventoryService;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -22,6 +23,7 @@ public class InventoryController {
   @PostMapping
   @Operation(description = "Add inventory")
   @ResponseStatus(HttpStatus.CREATED)
+  @PreAuthorize("hasRole('ADMIN')")
   public InventoryResponseDto addInventory(@Valid @RequestBody InventoryRequestDto request) {
     return inventoryService.addInventory(request);
   }
@@ -29,6 +31,7 @@ public class InventoryController {
   @PutMapping
   @Operation(description = "Update inventory")
   @ResponseStatus(HttpStatus.OK)
+  @PreAuthorize("hasRole('ADMIN')")
   public InventoryResponseDto updateInventory(@Valid @RequestBody InventoryRequestDto request) {
     return inventoryService.updateInventory(request);
   }
@@ -36,6 +39,7 @@ public class InventoryController {
   @DeleteMapping("/{inventoryCode}")
   @Operation(description = "Delete inventory")
   @ResponseStatus(HttpStatus.OK)
+  @PreAuthorize("hasRole('ADMIN')")
   public void deleteInventory(@PathVariable String inventoryCode) {
     inventoryService.deleteInventoryByCode(inventoryCode);
   }
@@ -43,6 +47,7 @@ public class InventoryController {
   @GetMapping
   @Operation(description = "Get all inventories")
   @ResponseStatus(HttpStatus.OK)
+  @PreAuthorize("hasRole('ADMIN')")
   public List<InventoryResponseDto> getInventories() {
     return inventoryService.getInventories();
   }
@@ -50,6 +55,7 @@ public class InventoryController {
   @GetMapping("/{code}")
   @Operation(description = "Get inventory by code")
   @ResponseStatus(HttpStatus.OK)
+  @PreAuthorize("hasRole('USER')")
   public InventoryResponseDto getInventoryByCode(@PathVariable String code) {
     return inventoryService.getInventoryByCode(code);
   }

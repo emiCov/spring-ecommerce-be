@@ -1,11 +1,6 @@
 package org.emi.spring_ecommerce_be.db.entities;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.SequenceGenerator;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "users")
@@ -21,6 +16,11 @@ public class UserEntity extends BaseEntity {
   private String lastName;
 
   private String email;
+
+  private String keycloakId;
+
+  @Enumerated(EnumType.STRING)
+  private UserRole role;
 
   public long getId() {
     return id;
@@ -52,5 +52,21 @@ public class UserEntity extends BaseEntity {
 
   public void setEmail(String email) {
     this.email = email;
+  }
+
+  public String getKeycloakId() {
+    return keycloakId;
+  }
+
+  public void setKeycloakId(String keycloakId) {
+    this.keycloakId = keycloakId;
+  }
+
+  public UserRole getRole() {
+    return role;
+  }
+
+  public void setRole(UserRole role) {
+    this.role = role;
   }
 }

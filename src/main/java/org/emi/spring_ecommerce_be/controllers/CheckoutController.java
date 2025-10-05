@@ -5,16 +5,14 @@ import org.emi.spring_ecommerce_be.dtos.OrderResponseDto;
 import org.emi.spring_ecommerce_be.mappers.OrderMapper;
 import org.emi.spring_ecommerce_be.services.CheckoutService;
 import org.emi.spring_ecommerce_be.services.OrderService;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("api/v1/checkout")
+@PreAuthorize("hasRole('USER')")
 public class CheckoutController {
-
-  @Value("${app.dev.default-user-email}")
-  private String devDefaultUser;
 
   private final OrderService orderService;
   private final CheckoutService checkoutService;
@@ -32,11 +30,9 @@ public class CheckoutController {
       summary = "Create an order",
       description = "Create an order with status 'PENDING' from the user's shopping cart")
   @ResponseStatus(HttpStatus.CREATED)
-  public OrderResponseDto createOrder(
-      @RequestHeader(name = "X-User-Email", required = false) String emailFromHeader) {
-    String userEmail = resolveUserEmail(emailFromHeader);
+  public OrderResponseDto createOrder() {
 
-    return orderMapper.toOrderResponseDto(orderService.createPendingOrder(userEmail));
+    return orderMapper.toOrderResponseDto(orderService.createPendingOrder());
   }
 
   @PostMapping("/{orderId}/complete")
@@ -48,15 +44,7 @@ public class CheckoutController {
   If payment fails, the status is set to 'CANCELLED' and the shopping cart is not deleted.
 """)
   @ResponseStatus(HttpStatus.CREATED)
-  public String completeOrder(
-      @PathVariable Long orderId,
-      @RequestHeader(name = "X-User-Email", required = false) String emailFromHeader) {
-    String userEmail = resolveUserEmail(emailFromHeader);
-
-    return checkoutService.completeOrder(orderId, userEmail);
-  }
-
-  private String resolveUserEmail(String emailFromHeader) {
-    return emailFromHeader != null ? emailFromHeader : devDefaultUser;
+  public String completeOrder(@PathVariable Long orderId) {
+    return checkoutService.completeOrder(orderId);
   }
 }

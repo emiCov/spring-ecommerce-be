@@ -11,6 +11,7 @@ import org.emi.spring_ecommerce_be.dtos.ProductRequestDto;
 import org.emi.spring_ecommerce_be.dtos.ProductResponseDto;
 import org.emi.spring_ecommerce_be.services.ProductService;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -45,6 +46,7 @@ public class ProductController {
             content = @Content)
       })
   @ResponseStatus(HttpStatus.CREATED)
+  @PreAuthorize("hasRole('ADMIN')")
   public ProductResponseDto addProduct(@Valid @RequestBody ProductRequestDto productRequest) {
     return productService.addProduct(productRequest);
   }
@@ -52,6 +54,7 @@ public class ProductController {
   @PutMapping
   @Operation(description = "Update a product")
   @ResponseStatus(HttpStatus.OK)
+  @PreAuthorize("hasRole('ADMIN')")
   public ProductResponseDto updateProduct(@Valid @RequestBody ProductRequestDto productRequest) {
     return productService.updateProduct(productRequest);
   }
@@ -59,6 +62,7 @@ public class ProductController {
   @DeleteMapping("/{productCode}")
   @Operation(description = "Delete product by code")
   @ResponseStatus(HttpStatus.OK)
+  @PreAuthorize("hasRole('ADMIN')")
   public void deleteProduct(@PathVariable String productCode) {
     productService.deleteProductByCode(productCode);
   }
