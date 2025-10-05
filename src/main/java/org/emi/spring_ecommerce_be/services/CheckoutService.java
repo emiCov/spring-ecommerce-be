@@ -21,7 +21,7 @@ public class CheckoutService {
   }
 
   @Transactional(readOnly = false)
-  public String completeOrder(long orderId, String userEmail) {
+  public String completeOrder(long orderId) {
     OrderEntity order = orderRepository.findById(orderId).orElseThrow();
 
     boolean paymentSuccess = paymentService.executePayment(order.getTotal());

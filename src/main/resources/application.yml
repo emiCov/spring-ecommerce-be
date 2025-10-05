@@ -19,6 +19,12 @@ spring:
     locations: classpath:db/migration
     baseline-on-migrate: true
 
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${keycloak.baseUrl}/realms/${keycloak.realm}/protocol/openid-connect/certs
+
 logging:
   level:
     org.hibernate.SQL: DEBUG
@@ -26,6 +32,15 @@ logging:
   pattern:
     console: ${LOG_PATTERN_CONSOLE:%green(%d{HH:mm:ss.SSS}) %highlight(%-5level) %red([%thread]) %magenta(%X{traceId:-}) %yellow(%logger{15}) - %msg%n}
 
-app:
-  dev:
-    default-user-email: admin@dev.com
+keycloak:
+  baseUrl: http://localhost:9090
+  realm: ${KEYCLOAK_REALM}
+  tokenUri: /realms/${keycloak.realm}/protocol/openid-connect/token
+  userUri: /admin/realms/${keycloak.realm}/users
+  roleUri: /admin/realms/${keycloak.realm}/roles
+  clientUri: /admin/realms/${keycloak.realm}/clients
+  clientId: ${KEYCLOAK_CLIENT_ID}
+  clientSecret: ${KEYCLOAK_CLIENT_SECRET}
+
+server:
+  port: 8081

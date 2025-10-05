@@ -3,10 +3,13 @@ package org.emi.spring_ecommerce_be.controllers;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import java.util.List;
-import org.emi.spring_ecommerce_be.dtos.UserRequestDto;
+import org.emi.spring_ecommerce_be.dtos.UserRegisterRequestDto;
 import org.emi.spring_ecommerce_be.dtos.UserResponseDto;
+import org.emi.spring_ecommerce_be.dtos.UserUpdateRequestDto;
 import org.emi.spring_ecommerce_be.services.UserService;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -19,24 +22,26 @@ public class UserController {
     this.userService = userService;
   }
 
-  @PostMapping
-  @Operation(description = "Add user")
+  @PostMapping("/register/user")
+  @Operation(description = "Register a new user")
   @ResponseStatus(HttpStatus.CREATED)
-  public UserResponseDto addUser(@Valid @RequestBody UserRequestDto request) {
-    return userService.addUser(request);
+  public ResponseEntity<UserResponseDto> registerUser(@RequestBody UserRegisterRequestDto request) {
+    return ResponseEntity.ok(userService.registerUser(request));
   }
 
   @PutMapping
   @Operation(description = "Update user")
   @ResponseStatus(HttpStatus.OK)
-  public UserResponseDto updateUser(@Valid @RequestBody UserRequestDto request) {
+  @PreAuthorize("hasRole('USER')")
+  public UserResponseDto updateUser(@Valid @RequestBody UserUpdateRequestDto request) {
     return userService.updateUser(request);
   }
 
   @DeleteMapping("/{email}")
-  @Operation(description = "Delete user")
+  @Operation(description = "Delete a user by email")
   @ResponseStatus(HttpStatus.OK)
-  public void deleteUser(@PathVariable String email) {
+  @PreAuthorize("hasRole('ADMIN')")
+  public void deleteUserByEmail(@PathVariable String email) {
     userService.deleteUserByEmail(email);
   }
 
